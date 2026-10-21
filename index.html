@@ -107,5 +107,26 @@ const telegramURL = "https://t.me/LxckyyyStore";
 document.getElementById("mainJoinButton").href = telegramURL;
 const headerJoinButton = document.getElementById("headerJoinButton");
 if (headerJoinButton) headerJoinButton.href = telegramURL;
+ function trackClickAndNavigate(element, eventName) { if (!element) return;
+element.addEventListener("click", function (event) { if (typeof fbq !== "function") return;
+event.preventDefault();
+const destination = this.href;
+let navigated = false;
+
+function continueToTelegram() {
+  if (navigated) return;
+  navigated = true;
+  window.location.href = destination;
+}
+
+fbq("trackCustom", eventName, {}, {
+  eventCallback: continueToTelegram,
+  eventTimeout: 1500
+});
+
+setTimeout(continueToTelegram, 1600);}); }
+trackClickAndNavigate( document.getElementById("mainJoinButton"), "JoinTelegram" );
+trackClickAndNavigate( document.getElementById("headerJoinButton"), "JoinTelegram" );
+trackClickAndNavigate( document.querySelector(".support-link"), "ContactAdmin" );
 </script>
 </body></html>
