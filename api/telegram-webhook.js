@@ -18,16 +18,19 @@ export default async function handler(req, res) {
     hasChatMember: Boolean(update.chat_member)
   });
 
-const change = update.chat_member;
+  const change = update.chat_member;
 
-if (change) {
-  console.log("TELEGRAM_MEMBER_STATUS", {
-    oldStatus: change.old_chat_member?.status,
-    newStatus: change.new_chat_member?.status,
-    oldIsMember: change.old_chat_member?.is_member,
-    newIsMember: change.new_chat_member?.is_member
-  });
-}
+  if (change) {
+    const oldMember = change.old_chat_member;
+    const newMember = change.new_chat_member;
+
+    console.log("TELEGRAM_MEMBER_STATUS", {
+      oldStatus: oldMember?.status,
+      newStatus: newMember?.status,
+      oldIsMember: oldMember?.is_member,
+      newIsMember: newMember?.is_member
+    });
+
     const isMember = (member) =>
       ["member", "administrator", "creator"].includes(member?.status) ||
       (member?.status === "restricted" && member?.is_member === true);
@@ -50,7 +53,9 @@ if (change) {
 
       if (!supabaseUrl || !serviceKey) {
         console.error("Supabase server configuration is missing");
-        return res.status(500).json({ error: "Server configuration error" });
+        return res.status(500).json({
+          error: "Server configuration error"
+        });
       }
 
       try {
@@ -73,8 +78,14 @@ if (change) {
         );
 
         if (!response.ok) {
-          console.error("Supabase insert failed", response.status);
-          return res.status(500).json({ error: "Database insert failed" });
+          const errorText = await response.text();
+          console.error("Supabase insert failed", {
+            status: response.status,
+            details: errorText
+          });
+          return res.status(500).json({
+            error: "Database insert failed"
+          });
         }
 
         console.log("TELEGRAM_GROUP_JOIN_SAVED", {
@@ -82,8 +93,13 @@ if (change) {
           joinedAt
         });
       } catch (error) {
-        console.error("Telegram join database request failed");
-        return res.status(500).json({ error: "Database request failed" });
+        console.error(
+          "Telegram join database request failed",
+          error?.message
+        );
+        return res.status(500).json({
+          error: "Database request failed"
+        });
       }
     }
   }
