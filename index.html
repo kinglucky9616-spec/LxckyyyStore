@@ -118,23 +118,7 @@ if (!response.ok) {
 // Track Telegram join clicks. if (mainJoinButton) { mainJoinButton.addEventListener("click", () => { saveStoreEvent("JoinTelegram"); }); }
 if (headerJoinButton) { headerJoinButton.addEventListener("click", () => { saveStoreEvent("JoinTelegram"); }); }
 // Track support clicks. document.querySelectorAll(".support-link").forEach((button) => { button.addEventListener("click", () => { saveStoreEvent("ContactAdmin"); }); });
-function trackClickAndNavigate(element, eventName) { if (!element) return;
-element.addEventListener("click", function (event) { event.preventDefault();
-const destination = this.href;
-const eventId = crypto.randomUUID();
-
-if (typeof window.fbq === "function") {
-  window.fbq("trackCustom", eventName, {}, {
-    eventID: eventId
-  });
-}
-
-saveStoreEvent(eventName, eventId);
-
-setTimeout(() => {
-  window.location.href = destination;
-}, 1000);}); }
- trackClickAndNavigate(document.querySelector('a[href="https://t.me/lxckyyy7"]'), "ContactAdmin");
+trackClickAndNavigate(document.querySelector('a[href="https://t.me/lxckyyy7"]'), "ContactAdmin");
 
 const SUPABASE_URL = "https://jjjbkmjgbfchspzogpfb.supabase.co";
 const SUPABASE_KEY = "sb_publishable_A0G7m1BMyEUTw7MRfEeTng_sGtj2mn1";
