@@ -12,7 +12,7 @@ t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '1661636525483501');
-fbq('track', 'PageView');
+/* PageView is sent below with a shared event ID for Pixel/CAPI deduplication. */
 </script>
 <noscript><img height="1" width="1" style="display:none"
 src="https://www.facebook.com/tr?id=1661636525483501&ev=PageView&noscript=1"
@@ -99,65 +99,104 @@ header{display:flex;align-items:center;gap:12px}
  <div class="trust-row"><div class="trust-item"><b>🛡️ Safety First</b><small>Clear communication</small></div><div class="trust-item"><b>⚡ Direct Service</b><small>No middleman</small></div><div class="trust-item"><b>👥 11K+ Community</b><small>Gaming community</small></div><div class="trust-item"><b>🎧 Support</b><small>Here to help</small></div></div>
  </section>
 </main>
-<a class="join-now-fixed" id="mainJoinButton" href="https://t.me/" target="_blank" rel="noopener noreferrer" aria-label="Join our Telegram group now"><span class="telegram-icon">➤</span> JOIN TELEGRAM NOW <span aria-hidden="true">↗</span></a>
+<a class="join-now-fixed" id="mainJoinButton" href="https://t.me/LxckyyyStore" target="_blank" rel="noopener noreferrer" aria-label="Join our Telegram group now"><span class="telegram-icon">➤</span> JOIN TELEGRAM NOW <span aria-hidden="true">↗</span></a>
 <footer class="wrap"><div><b>🎮 LXCKYYY STORE</b><br>Gaming deals. One destination.</div><div>Play bold. Stay legendary.</div></footer>
 <script>
-const telegramURL = "https://t.me/LxckyyyStore"; const supportURL = "https://t.me/lxckyyy7";
-const mainJoinButton = document.getElementById("mainJoinButton"); const headerJoinButton = document.getElementById("headerJoinButton");
-if (mainJoinButton) { mainJoinButton.href = telegramURL; }
-if (headerJoinButton) { headerJoinButton.href = telegramURL; }
-document.querySelectorAll(".support-link").forEach((button) => { button.href = supportURL; });
-async function saveStoreEvent(eventName) { const eventId = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : ${Date.now()}-${Math.random().toString(36).slice(2)};
-// Send event to Supabase using your existing configuration. try { if (typeof window.saveSupabaseEvent === "function") { await window.saveSupabaseEvent(eventName, eventId); } } catch (error) { console.error("Supabase event logging failed:", error); }
-// Send event to Meta Conversions API. try { const response = await fetch("/api/meta-capi", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event_name: eventName, event_id: eventId }), keepalive: true });
-if (!response.ok) {
-  console.error("Meta CAPI request failed:", response.status);
-}} catch (error) { console.error("Meta CAPI request failed:", error); }
-// Send event to the existing Meta Pixel. if (typeof window.fbq === "function") { window.fbq("trackCustom", eventName, {}, { eventID: eventId }); } }
-// Track page view. saveStoreEvent("PageView");
-// Track Telegram join clicks. if (mainJoinButton) { mainJoinButton.addEventListener("click", () => { saveStoreEvent("JoinTelegram"); }); }
-if (headerJoinButton) { headerJoinButton.addEventListener("click", () => { saveStoreEvent("JoinTelegram"); }); }
-// Track support clicks. document.querySelectorAll(".support-link").forEach((button) => { button.addEventListener("click", () => { saveStoreEvent("ContactAdmin"); }); });
-trackClickAndNavigate(document.querySelector('a[href="https://t.me/lxckyyy7"]'), "ContactAdmin");
+(() => {
+  "use strict";
 
-const SUPABASE_URL = "https://jjjbkmjgbfchspzogpfb.supabase.co";
-const SUPABASE_KEY = "sb_publishable_A0G7m1BMyEUTw7MRfEeTng_sGtj2mn1";
+  const TELEGRAM_CHANNEL = "https://t.me/LxckyyyStore";
+  const ADMIN_SUPPORT = "https://t.me/lxckyyy7";
+  const mainJoinButton = document.getElementById("mainJoinButton");
+  const headerJoinButton = document.getElementById("headerJoinButton");
 
-async function saveStoreEvent(eventName) {
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/events`, {
-      method: "POST",
-      keepalive: true,
-      headers: {
-        apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      },
-      body: JSON.stringify({
-        event_name: eventName,
-        page_url: location.href,
-        referrer: document.referrer || null
-      })
-    });
-  } catch (error) {
-    console.error("Event logging failed:", error);
+  // Preserve Supabase event logging from the original page.
+  const SUPABASE_URL = "https://jjjbkmjgbfchspzogpfb.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_A0G7m1BMyEUTw7MRfEeTng_sGtj2mn1";
+
+  if (mainJoinButton) mainJoinButton.href = TELEGRAM_CHANNEL;
+  if (headerJoinButton) headerJoinButton.href = TELEGRAM_CHANNEL;
+  document.querySelectorAll(".support-link").forEach((link) => {
+    link.href = ADMIN_SUPPORT;
+  });
+
+  function makeEventId() {
+    return (window.crypto && typeof window.crypto.randomUUID === "function")
+      ? window.crypto.randomUUID()
+      : "evt_" + Date.now() + "_" + Math.random().toString(16).slice(2);
   }
-}
 
-saveStoreEvent("PageView");
+  async function saveStoreEvent(eventName) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/events`, {
+        method: "POST",
+        keepalive: true,
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify({
+          event_name: eventName,
+          page_url: window.location.href,
+          referrer: document.referrer || null
+        })
+      });
+    } catch (error) {
+      console.error("Supabase event logging failed:", error);
+    }
+  }
 
-document.getElementById("mainJoinButton")
-  ?.addEventListener("click", () => {
-    saveStoreEvent("JoinTelegram");
+  function sendCapiEvent(eventName, eventId) {
+    try {
+      fetch("/api/meta-capi", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event_name: eventName,
+          event_id: eventId,
+          event_source_url: window.location.href
+        }),
+        keepalive: true
+      }).then(async (response) => {
+        if (!response.ok) {
+          const details = await response.text().catch(() => "");
+          console.warn("Meta CAPI returned", response.status, details);
+        }
+      }).catch((error) => console.warn("Meta CAPI request failed:", error));
+    } catch (error) {
+      console.warn("Meta CAPI request could not start:", error);
+    }
+  }
+
+  function trackEvent(eventName, standardEvent = false) {
+    const eventId = makeEventId();
+
+    if (typeof window.fbq === "function") {
+      if (standardEvent) {
+        window.fbq("track", eventName, {}, { eventID: eventId });
+      } else {
+        window.fbq("trackCustom", eventName, {}, { eventID: eventId });
+      }
+    }
+
+    sendCapiEvent(eventName, eventId);
+    saveStoreEvent(eventName);
+  }
+
+  // PageView runs once and shares the same ID between browser Pixel and CAPI.
+  trackEvent("PageView", true);
+
+  // Do not prevent clicks or delay navigation. Tracking is best-effort only.
+  [mainJoinButton, headerJoinButton].filter(Boolean).forEach((link) => {
+    link.addEventListener("click", () => trackEvent("JoinTelegram"), { passive: true });
   });
 
-document.querySelectorAll(".support-link")
-  .forEach(button => {
-    button.addEventListener("click", () => {
-      saveStoreEvent("ContactAdmin");
-    });
+  document.querySelectorAll(".support-link").forEach((link) => {
+    link.addEventListener("click", () => trackEvent("ContactAdmin"), { passive: true });
   });
+})();
 </script>
 </body>
 </html>
