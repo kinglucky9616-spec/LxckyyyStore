@@ -102,31 +102,22 @@ header{display:flex;align-items:center;gap:12px}
 <a class="join-now-fixed" id="mainJoinButton" href="https://t.me/" target="_blank" rel="noopener noreferrer" aria-label="Join our Telegram group now"><span class="telegram-icon">➤</span> JOIN TELEGRAM NOW <span aria-hidden="true">↗</span></a>
 <footer class="wrap"><div><b>🎮 LXCKYYY STORE</b><br>Gaming deals. One destination.</div><div>Play bold. Stay legendary.</div></footer>
 <script>
-/* Replace with your actual Telegram group invite link. */
-const telegramURL = "https://t.me/LxckyyyStore";
-document.getElementById("mainJoinButton").href = telegramURL;
-const headerJoinButton = document.getElementById("headerJoinButton");
-if (headerJoinButton) headerJoinButton.href = telegramURL;
- function trackClickAndNavigate(element, eventName) { if (!element) return;
-element.addEventListener("click", function (event) { if (typeof fbq !== "function") return;
-event.preventDefault();
-const destination = this.href;
-let navigated = false;
-
-function continueToTelegram() {
-  if (navigated) return;
-  navigated = true;
-  window.location.href = destination;
-}
-
-fbq("trackCustom", eventName, {}, {
-  eventCallback: continueToTelegram,
-  eventTimeout: 1500
-});
-
-setTimeout(continueToTelegram, 1600);}); }
-trackClickAndNavigate( document.getElementById("mainJoinButton"), "JoinTelegram" );
-trackClickAndNavigate( document.getElementById("headerJoinButton"), "JoinTelegram" );
+const telegramURL = "https://t.me/LxckyyyStore"; const supportURL = "https://t.me/lxckyyy7";
+const mainJoinButton = document.getElementById("mainJoinButton"); const headerJoinButton = document.getElementById("headerJoinButton");
+if (mainJoinButton) { mainJoinButton.href = telegramURL; }
+if (headerJoinButton) { headerJoinButton.href = telegramURL; }
+document.querySelectorAll(".support-link").forEach((button) => { button.href = supportURL; });
+async function saveStoreEvent(eventName) { const eventId = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : ${Date.now()}-${Math.random().toString(36).slice(2)};
+// Send event to Supabase using your existing configuration. try { if (typeof window.saveSupabaseEvent === "function") { await window.saveSupabaseEvent(eventName, eventId); } } catch (error) { console.error("Supabase event logging failed:", error); }
+// Send event to Meta Conversions API. try { const response = await fetch("/api/meta-capi", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event_name: eventName, event_id: eventId }), keepalive: true });
+if (!response.ok) {
+  console.error("Meta CAPI request failed:", response.status);
+}} catch (error) { console.error("Meta CAPI request failed:", error); }
+// Send event to the existing Meta Pixel. if (typeof window.fbq === "function") { window.fbq("trackCustom", eventName, {}, { eventID: eventId }); } }
+// Track page view. saveStoreEvent("PageView");
+// Track Telegram join clicks. if (mainJoinButton) { mainJoinButton.addEventListener("click", () => { saveStoreEvent("JoinTelegram"); }); }
+if (headerJoinButton) { headerJoinButton.addEventListener("click", () => { saveStoreEvent("JoinTelegram"); }); }
+// Track support clicks. document.querySelectorAll(".support-link").forEach((button) => { button.addEventListener("click", () => { saveStoreEvent("ContactAdmin"); }); });
 trackClickAndNavigate(document.querySelector('a[href="https://t.me/lxckyyy7"]'), "ContactAdmin");
 
 const SUPABASE_URL = "https://jjjbkmjgbfchspzogpfb.supabase.co";
