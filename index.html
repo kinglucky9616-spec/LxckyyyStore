@@ -178,9 +178,12 @@ header{display:flex;align-items:center;gap:12px}
   );
 })
 .catch((error) => {
-  console.error("Meta CAPI network error:", error);
-});
+      console.error("Meta CAPI network error:", error);
+    });
+  } catch (error) {
+    console.error("Meta CAPI request could not start:", error);
   }
+}
 
   function trackEvent(eventName, standardEvent = false) {
     const eventId = makeEventId();
