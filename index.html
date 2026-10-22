@@ -123,11 +123,29 @@ trackClickAndNavigate(document.querySelector('a[href="https://t.me/lxckyyy7"]'),
 const SUPABASE_URL = "https://jjjbkmjgbfchspzogpfb.supabase.co";
 const SUPABASE_KEY = "sb_publishable_A0G7m1BMyEUTw7MRfEeTng_sGtj2mn1";
 
-async function saveStoreEvent(eventName, eventId = crypto.randomUUID()) { try { await fetch(${SUPABASE_URL}/rest/v1/events, { method: "POST", keepalive: true, headers: { apikey: SUPABASE_KEY, Authorization: Bearer ${SUPABASE_KEY}, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify({ event_name: eventName, page_url: location.href, referrer: document.referrer || null }) }); } catch (error) { console.error("Supabase event logging failed:", error); }
-try { const response = await fetch("/api/meta-capi", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event_name: eventName, event_id: eventId }), keepalive: true });
-if (!response.ok) {
-  console.error("Meta CAPI failed:", response.status);
-}} catch (error) { console.error("Meta CAPI request failed:", error); } }t("PageView");
+async function saveStoreEvent(eventName) {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/events`, {
+      method: "POST",
+      keepalive: true,
+      headers: {
+        apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        event_name: eventName,
+        page_url: location.href,
+        referrer: document.referrer || null
+      })
+    });
+  } catch (error) {
+    console.error("Event logging failed:", error);
+  }
+}
+
+saveStoreEvent("PageView");
 
 document.getElementById("mainJoinButton")
   ?.addEventListener("click", () => {
