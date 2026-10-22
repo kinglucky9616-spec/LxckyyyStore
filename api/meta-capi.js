@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   const host = req.headers.host;
 
   try {
-    if (!origin || !host || new URL(origin).host !== host) {
+   if (!origin  !host  new URL(origin).host !== host) {
       return res.status(403).json({ error: "Invalid origin" });
     }
   } catch {
