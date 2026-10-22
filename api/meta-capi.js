@@ -4,6 +4,7 @@ try { if (!origin || new URL(origin).host !== host) { return res.status(403).jso
 const allowedEvents = new Set([ "PageView", "JoinTelegram", "ContactAdmin" ]);
 const { event_name, event_id } = req.body || {};
 if (
+if (
   !allowedEvents.has(event_name) ||
   typeof event_id !== "string" ||
   event_id.length < 1 ||
