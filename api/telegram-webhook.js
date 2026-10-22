@@ -1,5 +1,12 @@
 
-export default async function handler(req, res) {
+export default async function handler(req, res) {   
+  console.log("TELEGRAM_WEBHOOK_REQUEST_RECEIVED", {
+    method: req.method,
+    hasBody: Boolean(req.body),
+    hasSecretHeader: Boolean(
+      req.headers["x-telegram-bot-api-secret-token"]
+    )
+  });
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "Method not allowed" });
