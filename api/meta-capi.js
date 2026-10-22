@@ -3,7 +3,7 @@ const origin = req.headers.origin; const host = req.headers.host;
 try { if (!origin || new URL(origin).host !== host) { return res.status(403).json({ error: "Invalid origin" }); } } catch { return res.status(403).json({ error: "Invalid origin" }); }
 const allowedEvents = new Set([ "PageView", "JoinTelegram", "ContactAdmin" ]);
 const { event_name, event_id } = req.body || {};
-if ( !allowedEvents.has(event_name)  typeof event_id !== "string"  event_id.length < 1 || event_id.length > 100 )
+if ( !allowedEvents.has(event_name)  typeof event_id !== "string"  event_id.length < 1 || event_id.length > 100 ) { return res.status(400).json({ error: "Invalid event data" }); }
 const token = process.env.META_CAPI_ACCESS_TOKEN; const pixelId = process.env.META_PIXEL_ID;
 if (!token || !pixelId) { console.error("Meta CAPI configuration is missing"); return res.status(500).json({ error: "Server configuration missing" }); }
 const forwardedFor = req.headers["x-forwarded-for"]; const clientIp = typeof forwardedFor === "string" ? forwardedFor.split(",")[0].trim() : "";
@@ -15,30 +15,18 @@ if (process.env.META_CAPI_TEST_EVENT_CODE) { payload.test_event_code = process.e
 try { const url = https://graph.facebook.com/v26.0/${encodeURIComponent(pixelId)}/events + ?access_token=${encodeURIComponent(token)};
 const response = await fetch(url, {
   method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify(payload)
 });
 
 const result = await response.json();
 
 if (!response.ok) {
-  // Log Meta's error without exposing the access token
-  console.error(
-    "Meta CAPI error:",
-    JSON.stringify(result)
-  );
-
-  return res.status(502).json({
-    error: "Meta rejected the event"
-  });
+  console.error("Meta CAPI error:", JSON.stringify(result));
+  return res.status(502).json({ error: "Meta rejected the event" });
 }
 
 return res.status(200).json({
   success: true,
   events_received: result.events_received
-});} catch (error) { console.error("Meta CAPI request failed:", error.message);
-return res.status(502).json({
-  error: "Could not send event to Meta"
-});} }
+});} catch (error) { console.error("Meta CAPI request failed:", error.message); return res.status(502).json({ error: "Could not send event to Meta" }); } }
