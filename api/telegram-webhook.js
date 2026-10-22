@@ -18,13 +18,16 @@ export default async function handler(req, res) {
     hasChatMember: Boolean(update.chat_member)
   });
 
-  const change = update.chat_member;
-console.log("TELEGRAM_MEMBER_STATUS", {
-  oldStatus: change.old_chat_member?.status,
-  newStatus: change.new_chat_member?.status,
-  oldIsMember: change.old_chat_member?.is_member,
-  newIsMember: change.new_chat_member?.is_member
-});
+const change = update.chat_member;
+
+if (change) {
+  console.log("TELEGRAM_MEMBER_STATUS", {
+    oldStatus: change.old_chat_member?.status,
+    newStatus: change.new_chat_member?.status,
+    oldIsMember: change.old_chat_member?.is_member,
+    newIsMember: change.new_chat_member?.is_member
+  });
+}
     const isMember = (member) =>
       ["member", "administrator", "creator"].includes(member?.status) ||
       (member?.status === "restricted" && member?.is_member === true);
