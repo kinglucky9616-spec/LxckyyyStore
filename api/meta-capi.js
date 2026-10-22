@@ -3,7 +3,16 @@ const origin = req.headers.origin; const host = req.headers.host;
 try { if (!origin || new URL(origin).host !== host) { return res.status(403).json({ error: "Invalid origin" }); } } catch { return res.status(403).json({ error: "Invalid origin" }); }
 const allowedEvents = new Set([ "PageView", "JoinTelegram", "ContactAdmin" ]);
 const { event_name, event_id } = req.body || {};
-if ( !allowedEvents.has(event_name)  typeof event_id !== "string"  event_id.length < 1 || event_id.length > 100 ) { return res.status(400).json({ error: "Invalid event data" }); }
+if (
+  !allowedEvents.has(event_name) ||
+  typeof event_id !== "string" ||
+  event_id.length < 1 ||
+  event_id.length > 100
+) {
+  return res.status(400).json({
+    error: "Invalid event data"
+  });
+}
 const token = process.env.META_CAPI_ACCESS_TOKEN; const pixelId = process.env.META_PIXEL_ID;
 if (!token || !pixelId) { console.error("Meta CAPI configuration is missing"); return res.status(500).json({ error: "Server configuration missing" }); }
 const forwardedFor = req.headers["x-forwarded-for"]; const clientIp = typeof forwardedFor === "string" ? forwardedFor.split(",")[0].trim() : "";
