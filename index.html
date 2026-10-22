@@ -203,10 +203,62 @@ const TELEGRAM_CHANNEL = "https://t.me/+mIXwix58PaYzNzFl";
   // PageView runs once and shares the same ID between browser Pixel and CAPI.
   trackEvent("PageView", true);
 
-  // Do not prevent clicks or delay navigation. Tracking is best-effort only.
-  [mainJoinButton, headerJoinButton].filter(Boolean).forEach((link) => {
-    link.addEventListener("click", () => trackEvent("JoinTelegram"), { passive: true });
+ 
+function readCookie(name) {
+  const prefix = name + "=";
+  const item = document.cookie
+    .split("; ")
+    .find((cookie) => cookie.startsWith(prefix));
+
+  return item ? decodeURIComponent(item.slice(prefix.length)) : null;
+}
+
+[mainJoinButton, headerJoinButton].filter(Boolean).forEach((link) => {
+  link.addEventListener("click", async (event) => {
+    event.preventDefault();
+
+    // Keep the existing Meta Pixel/CAPI button-click event.
+    trackEvent("JoinTelegram");
+
+    const fallbackUrl = TELEGRAM_CHANNEL;
+    const newTab = window.open("about:blank", "_blank");
+
+    try {
+      const response = await fetch("/api/create-telegram-invite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          fbp: readCookie("_fbp"),
+          fbc: readCookie("_fbc"),
+          event_source_url: window.location.href
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.invite_link) {
+        throw new Error("Invite link creation failed");
+      }
+
+      if (newTab) {
+        newTab.location.href = result.invite_link;
+      } else {
+        window.location.href = result.invite_link;
+      }
+    } catch (error) {
+      console.error("Telegram invite error:", error);
+
+      if (newTab) {
+        newTab.location.href = fallbackUrl;
+      } else {
+        window.location.href = fallbackUrl;
+      }
+    }
   });
+});
+
 
   document.querySelectorAll(".support-link").forEach((link) => {
     link.addEventListener("click", () => trackEvent("ContactAdmin"), { passive: true });
