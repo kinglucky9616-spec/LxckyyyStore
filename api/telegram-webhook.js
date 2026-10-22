@@ -12,6 +12,10 @@ export default async function handler(req, res) {
   }
 
   const update = req.body;
+  console.log("TELEGRAM_UPDATE_RECEIVED", {
+  updateTypes: Object.keys(update || {}),
+  hasChatMember: Boolean(update?.chat_member)
+});
 
   if (update?.chat_member) {
     const change = update.chat_member;
