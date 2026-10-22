@@ -30,12 +30,13 @@ export default async function handler(req, res) {
     const oldMember = change.old_chat_member || {};
     const newMember = change.new_chat_member || {};
 
-    console.log("TELEGRAM_MEMBER_STATUS", {
-      oldStatus: oldMember.status,
-      newStatus: newMember.status,
-      oldIsMember: oldMember.is_member,
-      newIsMember: newMember.is_member
-    });
+  console.log("TELEGRAM_CHAT_MEMBER_EVENT", {
+  chatId: change.chat?.id,
+  chatTitle: change.chat?.title,
+  oldStatus: oldMember.status,
+  newStatus: newMember.status,
+  userId: newMember.user?.id
+});
 
     function isMember(member) {
       if (
