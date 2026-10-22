@@ -25,9 +25,7 @@ const result = await response.json();
 
 if (!response.ok) {
   console.error("Meta CAPI error:", JSON.stringify(result));
-  return res.status(502).json({
-    error: "Meta rejected the event"
-  });
+  return res.status(502).json({ error: "Meta rejected the event" });
 }
 
 return res.status(200).json({
