@@ -160,14 +160,26 @@ header{display:flex;align-items:center;gap:12px}
         }),
         keepalive: true
       }).then(async (response) => {
-        if (!response.ok) {
-          const details = await response.text().catch(() => "");
-          console.warn("Meta CAPI returned", response.status, details);
-        }
-      }).catch((error) => console.warn("Meta CAPI request failed:", error));
-    } catch (error) {
-      console.warn("Meta CAPI request could not start:", error);
-    }
+  const details = await response.text().catch(() => "");
+
+  if (!response.ok) {
+    console.error(
+      "Meta CAPI HTTP error:",
+      response.status,
+      details
+    );
+    return;
+  }
+
+  console.log(
+    "Meta CAPI response:",
+    response.status,
+    details
+  );
+})
+.catch((error) => {
+  console.error("Meta CAPI network error:", error);
+});
   }
 
   function trackEvent(eventName, standardEvent = false) {
