@@ -221,7 +221,142 @@ function readCookie(name) {
     trackEvent("JoinTelegram");
 
     const fallbackUrl = TELEGRAM_CHANNEL;
-    const newTab = window.open("about:blank", "_blank");
+    const newTab = window.open("", "_blank");
+
+if (newTab) {
+  newTab.document.open();
+  newTab.document.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LXCKYYY STORE | Trusted & Safe</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: #090909;
+  color: #f5f5f5;
+  font-family: Arial, sans-serif;
+}
+.card {
+  width: 100%;
+  max-width: 480px;
+  padding: 34px 22px;
+  text-align: center;
+  border: 1px solid #353535;
+  border-top: 2px solid #e5263b;
+  border-bottom: 2px solid #e5263b;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #171717, #090909);
+  box-shadow: 0 12px 40px #000;
+}
+.brand {
+  font-size: clamp(30px, 8vw, 43px);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 2px;
+}
+.brand span, .red { color: #ef293d; }
+.store {
+  margin-top: 5px;
+  color: #ef293d;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 9px;
+}
+.trust {
+  display: inline-block;
+  margin: 20px 0 28px;
+  padding: 9px 18px;
+  border: 1px solid #8d202b;
+  border-radius: 24px;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+.telegram {
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #e5263b;
+  border-radius: 50%;
+  font-size: 38px;
+}
+h1 { font-size: 24px; line-height: 1.4; margin: 0; }
+p { color: #bdbdbd; line-height: 1.7; font-size: 14px; }
+.progress {
+  height: 8px;
+  margin: 25px 0;
+  overflow: hidden;
+  border: 1px solid #414141;
+  border-radius: 10px;
+  background: #171717;
+}
+.bar {
+  width: 35%;
+  height: 100%;
+  border-radius: 10px;
+  background: #ef293d;
+  animation: move 1.8s ease-in-out infinite alternate;
+}
+.steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #c8c8c8;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.steps div { flex: 1; }
+.steps b {
+  display: block;
+  margin-bottom: 7px;
+  color: #ef293d;
+  font-size: 20px;
+}
+.footer {
+  margin-top: 27px;
+  color: #777;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+}
+@keyframes move {
+  from { transform: translateX(0); width: 25%; }
+  to { transform: translateX(210%); width: 35%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar { animation: none; }
+}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="brand">LXCK<span>YYY</span></div>
+  <div class="store">STORE</div>
+  <div class="trust">✓ &nbsp; TRUSTED &amp; SAFE</div>
+  <div class="telegram" aria-hidden="true">➤</div>
+  <h1>Preparing Your <span class="red">Telegram Invite</span>...</h1>
+  <p>Creating your secure and unique join link.<br>Please wait a moment.</p>
+  <div class="progress"><div class="bar"></div></div>
+  <div class="steps">
+    <div><b>↗️</b>Generating<br>Invite Link</div>
+    <div><b>✓</b>Securing<br>Your Access</div>
+    <div><b>➤</b>Connecting<br>to Telegram</div>
+  </div>
+  <div class="footer">PLEASE WAIT • DO NOT CLOSE THIS TAB</div>
+</main>
+</body>
+</html>`);
+  newTab.document.close();
+}
 
     try {
       const response = await fetch("/api/create-telegram-invite", {
