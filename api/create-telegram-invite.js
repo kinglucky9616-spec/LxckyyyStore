@@ -41,7 +41,7 @@ export default async function handler(req, res) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: chatId,
-          member_limit: 1
+          creates_join_request: true
         })
       }
     );
