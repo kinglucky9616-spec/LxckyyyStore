@@ -24,8 +24,204 @@ export default async function handler(req, res) {
     }
 
     const update = req.body || {};
+
     const request = update.chat_join_request || null;
     const change = update.chat_member || null;
+    const channelPost = update.channel_post || null;
+
+    const expectedChatId = process.env.TELEGRAM_CHAT_ID;
+
+    // --------------------------------------------------
+    // WEBSITE IMPORT: Telegram channel posts
+    // --------------------------------------------------
+
+    if (channelPost) {
+      const chatId = channelPost.chat?.id;
+
+      if (chatId == null) {
+        console.error("WEBSITE_IMPORT_MISSING_CHAT_ID");
+        return res.status(200).json({ ok: true });
+      }
+
+      if (!expectedChatId) {
+        console.error("WEBSITE_IMPORT_TELEGRAM_CHAT_ID_MISSING");
+        return res.status(500).json({
+          error: "Telegram channel configuration missing"
+        });
+      }
+
+      if (String(chatId) !== String(expectedChatId)) {
+        console.warn("WEBSITE_IMPORT_UNEXPECTED_CHANNEL", {
+          chatId
+        });
+        return res.status(200).json({ ok: true });
+      }
+
+      const postText =
+        channelPost.text ||
+        channelPost.caption ||
+        "";
+
+      const hasWebsiteTag = /#WEBSITE\b/i.test(postText);
+      const hasBgmiTag = /#BGMI\b/i.test(postText);
+      const hasUcTag = /#UC\b/i.test(postText);
+
+      // Ignore posts that are not intended for the website.
+      if (!hasWebsiteTag) {
+        return res.status(200).json({
+          ok: true,
+          websiteImport: false,
+          reason: "Missing #WEBSITE tag"
+        });
+      }
+
+      // Require exactly one content category.
+      if (hasBgmiTag === hasUcTag) {
+        console.warn("WEBSITE_IMPORT_INVALID_CATEGORY", {
+          messageId: channelPost.message_id
+        });
+
+        return res.status(200).json({
+          ok: true,
+          websiteImport: false,
+          reason: "Add either #BGMI or #UC"
+        });
+      }
+
+      const importUrl = process.env.WEBSITE_IMPORT_URL;
+      const importSecret = process.env.WEBSITE_IMPORT_SECRET;
+
+      if (!importUrl || !importSecret) {
+        console.error("WEBSITE_IMPORT_CONFIG_MISSING");
+
+        return res.status(500).json({
+          error: "Website import configuration missing"
+        });
+      }
+
+      // Extract one supported media item from this post.
+      const media = [];
+
+      if (
+        Array.isArray(channelPost.photo) &&
+        channelPost.photo.length > 0
+      ) {
+        // Telegram photo sizes are ordered smallest to largest.
+        const largestPhoto =
+          channelPost.photo[channelPost.photo.length - 1];
+
+        media.push({
+          file_id: largestPhoto.file_id,
+          type: "photo",
+          mime_type: "image/jpeg",
+          file_size: largestPhoto.file_size || null
+        });
+      } else if (channelPost.video?.file_id) {
+        media.push({
+          file_id: channelPost.video.file_id,
+          type: "video",
+          file_name: channelPost.video.file_name || null,
+          mime_type: channelPost.video.mime_type || "video/mp4",
+          file_size: channelPost.video.file_size || null
+        });
+      } else if (channelPost.animation?.file_id) {
+        media.push({
+          file_id: channelPost.animation.file_id,
+          type: "video",
+          file_name: channelPost.animation.file_name || null,
+          mime_type: channelPost.animation.mime_type || "video/mp4",
+          file_size: channelPost.animation.file_size || null
+        });
+      } else if (channelPost.document?.file_id) {
+        const document = channelPost.document;
+        const mimeType = document.mime_type || "";
+        const allowedDocumentTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "video/mp4",
+          "video/quicktime"
+        ];
+
+        if (allowedDocumentTypes.includes(mimeType)) {
+          media.push({
+            file_id: document.file_id,
+            type: mimeType.startsWith("video/")
+              ? "video"
+              : "photo",
+            file_name: document.file_name || null,
+            mime_type: mimeType,
+            file_size: document.file_size || null
+          });
+        } else {
+          console.warn("WEBSITE_IMPORT_UNSUPPORTED_DOCUMENT", {
+            messageId: channelPost.message_id,
+            mimeType
+          });
+
+          return res.status(200).json({
+            ok: true,
+            websiteImport: false,
+            reason: "Unsupported document type"
+          });
+        }
+      }
+
+      const productType = hasBgmiTag
+        ? "bgmi_update"
+        : "uc_deal";
+
+      const importPayload = {
+        chat_id: chatId,
+        message_id: channelPost.message_id,
+        text: postText,
+        product_type: productType,
+        media
+      };
+
+      const importResponse = await fetch(importUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${importSecret}`
+        },
+        body: JSON.stringify(importPayload)
+      });
+
+      const importResult = await importResponse
+        .json()
+        .catch(() => ({}));
+
+      if (!importResponse.ok) {
+        console.error("WEBSITE_IMPORT_FORWARD_FAILED", {
+          status: importResponse.status,
+          result: importResult,
+          messageId: channelPost.message_id
+        });
+
+        return res.status(500).json({
+          error: "Could not forward Telegram post to website"
+        });
+      }
+
+      console.log("WEBSITE_IMPORT_FORWARDED", {
+        chatId,
+        messageId: channelPost.message_id,
+        productType,
+        mediaCount: media.length
+      });
+
+      return res.status(200).json({
+        ok: true,
+        websiteImport: true,
+        productType,
+        mediaCount: media.length
+      });
+    }
+
+    // --------------------------------------------------
+    // EXISTING JOIN TRACKING: unchanged logic below
+    // --------------------------------------------------
 
     if (!request && !change) {
       return res.status(200).json({ ok: true });
@@ -33,7 +229,6 @@ export default async function handler(req, res) {
 
     const chat = request ? request.chat : change.chat;
     const chatId = chat && chat.id;
-    const expectedChatId = process.env.TELEGRAM_CHAT_ID;
 
     if (chatId == null) {
       console.error("TELEGRAM_UPDATE_MISSING_CHAT_ID");
@@ -418,4 +613,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Webhook failed" });
   }
 }
-
